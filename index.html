@@ -66,7 +66,12 @@
     .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
     .chip{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);padding:7px 10px;border-radius:999px;cursor:pointer}
     .chip.active{color:var(--text);border-color:rgba(230,184,92,.38);background:rgba(230,184,92,.12)}
-    .chart{width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:var(--rs);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01)), rgba(10,16,24,.7)}
+    .chart-holder{position:relative}
+    .chart{width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:var(--rs);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01)), rgba(10,16,24,.7);display:block}
+    .chart-tooltip{position:absolute;z-index:5;min-width:168px;pointer-events:none;border:1px solid rgba(230,184,92,.28);border-radius:10px;background:rgba(8,13,20,.94);box-shadow:var(--shadow);padding:10px 11px;color:var(--text);font-size:12px;line-height:1.45;opacity:0;transform:translate(12px,-50%);transition:opacity .12s ease}
+    .chart-tooltip strong{display:block;margin-bottom:4px;font-size:13px}
+    .chart-tooltip span{display:flex;justify-content:space-between;gap:14px;color:var(--muted)}
+    .chart-tooltip b{color:var(--text);font-weight:700}
     .mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
     .mini{border:1px solid var(--line);border-radius:var(--rs);padding:12px;background:rgba(255,255,255,.02)}
     .mini span{display:block;color:var(--muted);font-size:12px}
@@ -183,12 +188,18 @@
             <div class="chart-wrap">
               <div>
                 <div class="chips" id="tfGroup">
+                  <button class="chip" data-tf="1m">1m</button>
+                  <button class="chip" data-tf="3m">3m</button>
+                  <button class="chip" data-tf="5m">5m</button>
                   <button class="chip" data-tf="15m">15m</button>
+                  <button class="chip" data-tf="30m">30m</button>
                   <button class="chip" data-tf="1H">1H</button>
                   <button class="chip active" data-tf="4H">4H</button>
-                  <button class="chip" data-tf="1D">1D</button>
                 </div>
-                <svg class="chart" id="chart" viewBox="0 0 960 540" preserveAspectRatio="none"></svg>
+                <div class="chart-holder">
+                  <svg class="chart" id="chart" viewBox="0 0 960 540" preserveAspectRatio="none"></svg>
+                  <div class="chart-tooltip" id="chartTooltip"></div>
+                </div>
                 <div class="mini-grid">
                   <div class="mini"><span>支撑 / 阻力</span><strong id="miniLevels">--</strong></div>
                   <div class="mini"><span>均线状态</span><strong id="maState">--</strong></div>
@@ -345,16 +356,20 @@
     ];
 
     const tfConfig = {
+      '1m': { score: 56, bias:'极速震荡', rsi: 54, macd: 42, adx: 17, atr: 52, note:'1分钟噪音更大，只适合盯盘和触发提醒。', ma:'MA20 ≈ MA50', pattern:'微周期拉锯' },
+      '3m': { score: 58, bias:'短线试探', rsi: 56, macd: 44, adx: 18, atr: 55, note:'3分钟看突破初动，确认不足时先等回踩。', ma:'MA20 > MA50', pattern:'短线抬升试探' },
+      '5m': { score: 60, bias:'短线偏多', rsi: 57, macd: 45, adx: 19, atr: 58, note:'5分钟适合看入场节奏，防假突破。', ma:'MA20 > MA50', pattern:'小级别上移' },
       '15m': { score: 61, bias:'短线拉锯', rsi: 58, macd: 46, adx: 20, atr: 61, note:'更适合看短线回踩，不适合追单。', ma:'MA20 > MA50', pattern:'盘中震荡上移' },
+      '30m': { score: 65, bias:'偏多修复', rsi: 61, macd: 50, adx: 22, atr: 64, note:'30分钟能过滤一部分噪音，重点看支撑有效性。', ma:'MA20 > MA50', pattern:'回踩后企稳' },
       '1H': { score: 68, bias:'偏多震荡', rsi: 64, macd: 54, adx: 24, atr: 67, note:'方向偏上，但要确认突破质量。', ma:'MA20 > MA50', pattern:'回踩后修复' },
       '4H': { score: 72, bias:'偏多震荡', rsi: 66, macd: 58, adx: 26, atr: 71, note:'守住关键位时，上行结构仍在。', ma:'MA20 > MA50', pattern:'上升通道内回踩' },
-      '1D': { score: 77, bias:'趋势偏强', rsi: 69, macd: 63, adx: 29, atr: 74, note:'日线趋势更完整，但事件风险更大。', ma:'MA20 > MA50 > MA200', pattern:'中期抬升' },
     };
 
     const el = (id) => document.getElementById(id);
     const fmtClock = () => new Date().toLocaleTimeString('zh-CN', { hour12:false });
     const fmtStamp = () => new Date().toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false });
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+    let chartLayout = null;
 
     function log(title, text, level = 'mid') {
       state.log.unshift({ title, text, level, time: fmtStamp() });
@@ -362,9 +377,9 @@
     }
 
     function seriesFromPrice(price, tf) {
-      const n = { '15m': 70, '1H': 62, '4H': 56, '1D': 48 }[tf];
-      const drift = { '15m': 0.16, '1H': 0.28, '4H': 0.36, '1D': 0.5 }[tf];
-      const amp = { '15m': 1.8, '1H': 2.8, '4H': 4.3, '1D': 6.1 }[tf];
+      const n = { '1m': 96, '3m': 88, '5m': 82, '15m': 74, '30m': 68, '1H': 62, '4H': 56 }[tf] || 62;
+      const drift = { '1m': 0.035, '3m': 0.06, '5m': 0.085, '15m': 0.16, '30m': 0.22, '1H': 0.28, '4H': 0.36 }[tf] || 0.28;
+      const amp = { '1m': 0.75, '3m': 1.05, '5m': 1.35, '15m': 1.8, '30m': 2.25, '1H': 2.8, '4H': 4.3 }[tf] || 2.8;
       const start = price - amp * 9;
       const arr = [];
       let p = start;
@@ -403,55 +418,134 @@
 
     function drawChart(series) {
       const svg = el('chart');
-      const w = 960, h = 540, pad = { l: 56, r: 24, t: 24, b: 42 };
+      const data = series.map((d, i) => ({
+        ...d,
+        volume: d.volume ?? Math.round((Math.abs(d.close - d.open) + 1) * (820 + (i % 9) * 115)),
+      }));
+      const w = 960, h = 540, pad = { l: 54, r: 82, t: 30, b: 42 };
       const innerW = w - pad.l - pad.r;
-      const innerH = h - pad.t - pad.b;
-      const max = Math.max(...series.map(d => d.high));
-      const min = Math.min(...series.map(d => d.low));
+      const volumeH = 86;
+      const gap = 18;
+      const priceH = h - pad.t - pad.b - volumeH - gap;
+      const volumeTop = pad.t + priceH + gap;
+      const max = Math.max(...data.map(d => d.high));
+      const min = Math.min(...data.map(d => d.low));
       const range = max - min || 1;
-      const xStep = innerW / Math.max(1, series.length - 1);
+      const xStep = innerW / Math.max(1, data.length - 1);
       const x = i => pad.l + i * xStep;
-      const y = v => pad.t + (max - v) / range * innerH;
-      const line = series.map((d, i) => `${x(i)},${y(d.close)}`).join(' ');
-      const ma20 = series.map((_, i) => {
-        const s = series.slice(Math.max(0, i - 19), i + 1);
+      const y = v => pad.t + (max - v) / range * priceH;
+      const ma20 = data.map((_, i) => {
+        const s = data.slice(Math.max(0, i - 19), i + 1);
         return s.reduce((a, d) => a + d.close, 0) / s.length;
       });
-      const ma50 = series.map((_, i) => {
-        const s = series.slice(Math.max(0, i - 49), i + 1);
+      const ma50 = data.map((_, i) => {
+        const s = data.slice(Math.max(0, i - 49), i + 1);
         return s.reduce((a, d) => a + d.close, 0) / s.length;
       });
-      const bars = series.map((d, i) => {
+      const bars = data.map((d, i) => {
         const cx = x(i), up = d.close >= d.open;
-        const fill = up ? 'rgba(123,214,156,.92)' : 'rgba(240,107,107,.92)';
+        const fill = up ? 'rgba(123,214,156,.96)' : 'rgba(240,107,107,.96)';
         const top = y(Math.max(d.open, d.close));
         const bottom = y(Math.min(d.open, d.close));
         const wickTop = y(d.high), wickBottom = y(d.low);
-        const bw = clamp(xStep * .56, 3, 12);
-        return `<line x1="${cx}" y1="${wickTop}" x2="${cx}" y2="${wickBottom}" stroke="${fill}" stroke-width="1.4"/><rect x="${cx - bw/2}" y="${top}" width="${bw}" height="${Math.max(1.2, bottom - top)}" rx="1.4" fill="${fill}"/>`;
+        const bw = clamp(xStep * .58, 4, 13);
+        return `<line x1="${cx}" y1="${wickTop}" x2="${cx}" y2="${wickBottom}" stroke="${fill}" stroke-width="1.5"/><rect x="${cx - bw/2}" y="${top}" width="${bw}" height="${Math.max(1.8, bottom - top)}" rx="1.6" fill="${fill}"/>`;
+      }).join('');
+      const maxVolume = Math.max(...data.map(d => d.volume), 1);
+      const volumes = data.map((d, i) => {
+        const cx = x(i), up = d.close >= d.open;
+        const bw = clamp(xStep * .58, 4, 13);
+        const vh = Math.max(2, (d.volume / maxVolume) * (volumeH - 12));
+        return `<rect x="${cx - bw/2}" y="${volumeTop + volumeH - vh}" width="${bw}" height="${vh}" rx="1.5" fill="${up ? 'rgba(123,214,156,.34)' : 'rgba(240,107,107,.34)'}"/>`;
       }).join('');
       const grid = [];
       for (let i = 0; i < 6; i++) {
-        const gy = pad.t + innerH / 5 * i;
-        grid.push(`<line x1="${pad.l}" y1="${gy}" x2="${w - pad.r}" y2="${gy}" stroke="rgba(255,255,255,.05)"/>`);
+        const gy = pad.t + priceH / 5 * i;
+        const price = max - range / 5 * i;
+        grid.push(`<line x1="${pad.l}" y1="${gy}" x2="${w - pad.r}" y2="${gy}" stroke="rgba(255,255,255,.055)"/>`);
+        grid.push(`<text x="${w - pad.r + 10}" y="${gy + 4}" fill="rgba(147,163,184,.78)" font-size="12">${price.toFixed(1)}</text>`);
       }
-      for (let i = 0; i < 8; i++) {
-        const gx = pad.l + innerW / 7 * i;
+      for (let i = 0; i < 7; i++) {
+        const idx = Math.round((data.length - 1) / 6 * i);
+        const gx = x(idx);
         grid.push(`<line x1="${gx}" y1="${pad.t}" x2="${gx}" y2="${h - pad.b}" stroke="rgba(255,255,255,.04)"/>`);
+        grid.push(`<text x="${gx}" y="${h - 16}" fill="rgba(147,163,184,.72)" font-size="11" text-anchor="middle">${idx + 1}</text>`);
       }
       const support = y(min + range * .26);
       const resistance = y(min + range * .74);
+      const last = data.at(-1);
+      const lastY = y(last.close);
+      const lastColor = last.close >= last.open ? 'rgba(123,214,156,.98)' : 'rgba(240,107,107,.98)';
+      chartLayout = { data, w, h, pad, xStep, x, y };
       svg.innerHTML = `
+        <defs>
+          <linearGradient id="volumeFade" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="rgba(230,184,92,.22)"/><stop offset="1" stop-color="rgba(230,184,92,0)"/></linearGradient>
+        </defs>
+        <rect x="${pad.l}" y="${volumeTop}" width="${innerW}" height="${volumeH}" fill="url(#volumeFade)" opacity=".5"/>
         ${grid.join('')}
         <line x1="${pad.l}" y1="${support}" x2="${w - pad.r}" y2="${support}" stroke="rgba(123,214,156,.42)" stroke-dasharray="6 6"/>
         <line x1="${pad.l}" y1="${resistance}" x2="${w - pad.r}" y2="${resistance}" stroke="rgba(230,184,92,.45)" stroke-dasharray="6 6"/>
-        <polyline fill="none" stroke="rgba(230,184,92,.14)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" points="${line}"/>
         <polyline fill="none" stroke="rgba(61,214,196,.95)" stroke-width="2.2" points="${ma20.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>
         <polyline fill="none" stroke="rgba(138,174,255,.85)" stroke-width="2.2" points="${ma50.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>
+        ${volumes}
+        <line x1="${pad.l}" y1="${lastY}" x2="${w - pad.r}" y2="${lastY}" stroke="${lastColor}" stroke-width="1" stroke-dasharray="4 5" opacity=".65"/>
         ${bars}
+        <g id="crosshair" opacity="0">
+          <line id="crossX" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${h - pad.b}" stroke="rgba(231,238,247,.28)" stroke-dasharray="4 4"/>
+          <line id="crossY" x1="${pad.l}" y1="${pad.t}" x2="${w - pad.r}" y2="${pad.t}" stroke="rgba(231,238,247,.28)" stroke-dasharray="4 4"/>
+          <circle id="crossDot" cx="${x(data.length - 1)}" cy="${lastY}" r="4" fill="${lastColor}" stroke="rgba(8,13,20,.95)" stroke-width="2"/>
+        </g>
+        <rect x="${w - pad.r + 6}" y="${lastY - 12}" width="68" height="24" rx="6" fill="${lastColor}"/>
+        <text x="${w - pad.r + 40}" y="${lastY + 4}" fill="#071019" font-size="12" text-anchor="middle" font-weight="700">${last.close.toFixed(1)}</text>
         <text x="${pad.l}" y="${pad.t - 6}" fill="rgba(231,238,247,.82)" font-size="14">Gold · ${state.tf}</text>
-        <text x="${w - pad.r}" y="${pad.t - 6}" fill="rgba(147,163,184,.86)" font-size="12" text-anchor="end">实时模拟 K 线</text>
+        <text x="${w - pad.r}" y="${pad.t - 6}" fill="rgba(147,163,184,.86)" font-size="12" text-anchor="end">K线 · MA20 · MA50 · Volume</text>
       `;
+    }
+
+    function moveChartCursor(evt) {
+      if (!chartLayout) return;
+      const svg = el('chart');
+      const tip = el('chartTooltip');
+      const rect = svg.getBoundingClientRect();
+      const viewX = (evt.clientX - rect.left) / rect.width * chartLayout.w;
+      const idx = clamp(Math.round((viewX - chartLayout.pad.l) / chartLayout.xStep), 0, chartLayout.data.length - 1);
+      const d = chartLayout.data[idx];
+      const cx = chartLayout.x(idx);
+      const cy = chartLayout.y(d.close);
+      const prev = chartLayout.data[idx - 1]?.close ?? d.open;
+      const diff = d.close - prev;
+      const pct = prev ? diff / prev * 100 : 0;
+      const cross = svg.querySelector('#crosshair');
+      if (cross) {
+        cross.setAttribute('opacity', '1');
+        svg.querySelector('#crossX')?.setAttribute('x1', cx);
+        svg.querySelector('#crossX')?.setAttribute('x2', cx);
+        svg.querySelector('#crossY')?.setAttribute('y1', cy);
+        svg.querySelector('#crossY')?.setAttribute('y2', cy);
+        svg.querySelector('#crossDot')?.setAttribute('cx', cx);
+        svg.querySelector('#crossDot')?.setAttribute('cy', cy);
+      }
+      if (tip) {
+        const localX = evt.clientX - rect.left;
+        const localY = evt.clientY - rect.top;
+        tip.style.opacity = '1';
+        tip.style.left = `${clamp(localX, 10, rect.width - 190)}px`;
+        tip.style.top = `${clamp(localY, 54, rect.height - 30)}px`;
+        tip.innerHTML = `
+          <strong>第 ${idx + 1} 根 · ${state.tf}</strong>
+          <span>开盘 <b>${d.open.toFixed(2)}</b></span>
+          <span>最高 <b>${d.high.toFixed(2)}</b></span>
+          <span>最低 <b>${d.low.toFixed(2)}</b></span>
+          <span>收盘 <b>${d.close.toFixed(2)}</b></span>
+          <span>涨跌 <b style="color:${diff >= 0 ? 'var(--green)' : 'var(--red)'}">${diff >= 0 ? '+' : ''}${diff.toFixed(2)} / ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</b></span>
+        `;
+      }
+    }
+
+    function leaveChartCursor() {
+      el('chart')?.querySelector('#crosshair')?.setAttribute('opacity', '0');
+      const tip = el('chartTooltip');
+      if (tip) tip.style.opacity = '0';
     }
 
     function renderIndicators(info, snap) {
@@ -657,10 +751,11 @@
 
     function applySnapshot(snapshot) {
       state.market = snapshot;
-      const info = derived(snapshot.series || seriesFromPrice(snapshot.price, state.tf));
+      const activeSeries = seriesFromPrice(snapshot.price, state.tf);
+      const info = derived(activeSeries);
       const tf = tfConfig[state.tf];
 
-      drawChart(snapshot.series || seriesFromPrice(snapshot.price, state.tf));
+      drawChart(activeSeries);
       renderIndicators(info, snapshot);
       renderScenarios(snapshot);
       renderAssets(snapshot);
@@ -954,9 +1049,10 @@
 
     function applySnapshot(snapshot) {
       state.market = snapshot;
-      const info = derived(snapshot.series || seriesFromPrice(snapshot.price, state.tf));
+      const activeSeries = seriesFromPrice(snapshot.price, state.tf);
+      const info = derived(activeSeries);
       const tf = tfConfig[state.tf];
-      drawChart(snapshot.series || seriesFromPrice(snapshot.price, state.tf));
+      drawChart(activeSeries);
       renderIndicators(info, snapshot);
       renderScenarios(snapshot);
       renderAssets(snapshot);
@@ -1077,6 +1173,9 @@
     document.getElementById('pushBtn').addEventListener('click', async () => {
       await enablePush();
     });
+
+    el('chart').addEventListener('mousemove', moveChartCursor);
+    el('chart').addEventListener('mouseleave', leaveChartCursor);
 
     document.getElementById('ruleForm').addEventListener('submit', async (e) => {
       e.preventDefault();
