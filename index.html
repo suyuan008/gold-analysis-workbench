@@ -63,16 +63,25 @@
     .head h2{margin:0;font-size:15px;line-height:1.2}
     .body{padding:16px 18px 18px;min-width:0}
     .chart-wrap{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
-    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .chip{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);padding:7px 10px;border-radius:999px;cursor:pointer}
-    .chip.active{color:var(--text);border-color:rgba(230,184,92,.38);background:rgba(230,184,92,.12)}
-    .chart-holder{position:relative}
-    .chart{width:100%;height:clamp(360px,42vw,540px);border:1px solid var(--line);border-radius:var(--rs);background:#0b1118;display:block;overflow:hidden}
-    .chart-tooltip{position:absolute;z-index:5;left:10px;top:10px;pointer-events:none;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(8,13,20,.82);box-shadow:var(--shadow);padding:8px 10px;color:var(--text);font-size:12px;line-height:1.45;opacity:1;transition:opacity .12s ease;backdrop-filter:blur(8px)}
-    .chart-tooltip strong{display:inline;margin-right:10px;font-size:12px}
-    .chart-tooltip span{display:inline-flex;gap:4px;margin-right:8px;color:var(--muted)}
+    .terminal-chart{border:1px solid var(--line);border-radius:var(--rs);background:#111821;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+    .terminal-top{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);background:#121923;padding:0 10px;min-height:32px}
+    .chips{display:flex;gap:2px;flex-wrap:wrap;margin:0}
+    .chip{border:0;background:transparent;color:#8f9bad;padding:8px 7px;border-radius:0;cursor:pointer;font-size:12px}
+    .chip.active{color:#58a6ff;background:rgba(88,166,255,.08);box-shadow:inset 0 -2px 0 #58a6ff}
+    .terminal-actions{display:flex;gap:10px;align-items:center;color:#8f9bad;font-size:12px;white-space:nowrap}
+    .terminal-actions span{display:inline-flex;gap:4px;align-items:center}
+    .tool-strip,.indicator-strip{display:flex;gap:12px;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);background:#0e151f;color:#7f8b9c;font-size:12px;min-height:28px;padding:0 10px;overflow:hidden;white-space:nowrap}
+    .tool-strip span{opacity:.9}
+    .indicator-strip{border-top:1px solid rgba(255,255,255,.06);border-bottom:0}
+    .indicator-strip strong{color:#58a6ff}
+    .chart-holder{position:relative;background:#111821}
+    .chart{width:100%;height:clamp(460px,52vw,650px);background:#111821;display:block;overflow:hidden}
+    .chart-tooltip{position:absolute;z-index:5;right:10px;top:10px;left:auto;pointer-events:none;border:0;border-radius:0;background:rgba(28,38,50,.9);box-shadow:none;padding:8px 11px;color:var(--text);font-size:12px;line-height:1.55;opacity:1;transition:opacity .12s ease;backdrop-filter:blur(8px);min-width:136px}
+    .chart-tooltip strong{display:block;margin:0 0 4px;font-size:12px}
+    .chart-tooltip span{display:flex;justify-content:space-between;gap:10px;margin:0;color:#b7c0cc}
     .chart-tooltip b{color:var(--text);font-weight:700}
-    .chart-credit{position:absolute;right:10px;bottom:8px;z-index:4;font-size:10px;color:rgba(147,163,184,.68);text-decoration:none;background:rgba(8,13,20,.58);border:1px solid rgba(255,255,255,.06);border-radius:999px;padding:4px 8px}
+    .chart-price-tag{position:absolute;right:0;top:50%;z-index:4;transform:translateY(-50%);background:#e64c64;color:#10151d;font-size:12px;font-weight:700;padding:4px 9px;clip-path:polygon(9px 0,100% 0,100% 100%,9px 100%,0 50%)}
+    .chart-credit{position:absolute;right:8px;bottom:8px;z-index:4;font-size:10px;color:rgba(147,163,184,.68);text-decoration:none;background:rgba(8,13,20,.58);border:1px solid rgba(255,255,255,.06);border-radius:999px;padding:4px 8px}
     .chart-credit:hover{color:var(--text);border-color:rgba(255,255,255,.14)}
     .mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
     .mini{border:1px solid var(--line);border-radius:var(--rs);padding:12px;background:rgba(255,255,255,.02)}
@@ -184,24 +193,37 @@
         <article class="panel">
           <div class="head">
             <div><h2>价格结构与技术面</h2><div class="sub">实时价格、周期切换、支撑阻力与指标摘要</div></div>
-            <div class="small" id="tfLabel">周期：4H</div>
+            <div class="small" id="tfLabel">周期：1m</div>
           </div>
           <div class="body">
             <div class="chart-wrap">
               <div>
-                <div class="chips" id="tfGroup">
-                  <button class="chip" data-tf="1m">1m</button>
-                  <button class="chip" data-tf="3m">3m</button>
-                  <button class="chip" data-tf="5m">5m</button>
-                  <button class="chip" data-tf="15m">15m</button>
-                  <button class="chip" data-tf="30m">30m</button>
-                  <button class="chip" data-tf="1H">1H</button>
-                  <button class="chip active" data-tf="4H">4H</button>
-                </div>
-                <div class="chart-holder">
-                  <div class="chart" id="chart"></div>
-                  <div class="chart-tooltip" id="chartTooltip"></div>
-                  <a class="chart-credit" href="https://www.tradingview.com/lightweight-charts/" target="_blank" rel="noopener">Lightweight Charts</a>
+                <div class="terminal-chart">
+                  <div class="terminal-top">
+                    <div class="chips" id="tfGroup">
+                      <span class="small">分时</span>
+                      <button class="chip active" data-tf="1m">1分</button>
+                      <button class="chip" data-tf="3m">3分</button>
+                      <button class="chip" data-tf="5m">5分</button>
+                      <button class="chip" data-tf="15m">15分</button>
+                      <button class="chip" data-tf="30m">30分</button>
+                      <button class="chip" data-tf="1H">1小时</button>
+                      <button class="chip" data-tf="4H">4小时</button>
+                    </div>
+                    <div class="terminal-actions"><span>回放</span><span>画线</span><span>AI解析</span><span id="chartUpdated">最新 --:--</span></div>
+                  </div>
+                  <div class="tool-strip">
+                    <span>⌁</span><span>⌖</span><span>↗</span><span>⌬</span><span>▥</span><span>T</span><span>G</span><span>⚑</span><span>↻</span><span>⌫</span><span>◎</span>
+                  </div>
+                  <div class="chart-holder">
+                    <div class="chart" id="chart"></div>
+                    <div class="chart-tooltip" id="chartTooltip"></div>
+                    <div class="chart-price-tag" id="chartPriceTag">--</div>
+                    <a class="chart-credit" href="https://www.tradingview.com/lightweight-charts/" target="_blank" rel="noopener">Lightweight Charts</a>
+                  </div>
+                  <div class="indicator-strip">
+                    <span>成交量</span><strong>VOL</strong><span>MACD</span><span>KDJ</span><span>RSI</span><span>WR</span><span>CCI</span><span>BIAS</span><span>ATR</span><span>OBV</span>
+                  </div>
                 </div>
                 <div class="mini-grid">
                   <div class="mini"><span>支撑 / 阻力</span><strong id="miniLevels">--</strong></div>
@@ -333,7 +355,7 @@
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script>
     const state = {
-      tf: '4H',
+      tf: '1m',
       market: null,
       news: [],
       user: null,
@@ -380,24 +402,98 @@
       renderLog();
     }
 
+    function hashSeed(input) {
+      let h = 2166136261;
+      for (let i = 0; i < input.length; i++) {
+        h ^= input.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function seededRandom(seed) {
+      let s = seed || 1;
+      return () => {
+        s = Math.imul(1664525, s) + 1013904223;
+        return ((s >>> 0) / 4294967296);
+      };
+    }
+
+    function gaussian(rng) {
+      const u = Math.max(rng(), 1e-9);
+      const v = Math.max(rng(), 1e-9);
+      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+
     function seriesFromPrice(price, tf) {
-      const n = { '1m': 96, '3m': 88, '5m': 82, '15m': 74, '30m': 68, '1H': 62, '4H': 56 }[tf] || 62;
-      const drift = { '1m': 0.035, '3m': 0.06, '5m': 0.085, '15m': 0.16, '30m': 0.22, '1H': 0.28, '4H': 0.36 }[tf] || 0.28;
-      const amp = { '1m': 0.75, '3m': 1.05, '5m': 1.35, '15m': 1.8, '30m': 2.25, '1H': 2.8, '4H': 4.3 }[tf] || 2.8;
-      const start = price - amp * 9;
+      const cfg = {
+        '1m': { n: 180, vol: .32, shock: .055, anchor: 7.5, visible: 92 },
+        '3m': { n: 168, vol: .46, shock: .06, anchor: 9.5, visible: 88 },
+        '5m': { n: 156, vol: .58, shock: .065, anchor: 11.5, visible: 84 },
+        '15m': { n: 132, vol: .92, shock: .07, anchor: 16, visible: 76 },
+        '30m': { n: 118, vol: 1.25, shock: .075, anchor: 20, visible: 72 },
+        '1H': { n: 104, vol: 1.75, shock: .08, anchor: 26, visible: 68 },
+        '4H': { n: 92, vol: 2.9, shock: .085, anchor: 38, visible: 62 },
+      }[tf] || { n: 104, vol: 1.75, shock: .08, anchor: 26, visible: 68 };
+      const minutes = { '1m': 1, '3m': 3, '5m': 5, '15m': 15, '30m': 30, '1H': 60, '4H': 240 }[tf] || 60;
+      const bucket = Math.floor(Date.now() / (minutes * 60 * 1000));
+      const rng = seededRandom(hashSeed(`${tf}:${Math.round(price * 10)}:${bucket}`));
       const arr = [];
-      let p = start;
-      for (let i = 0; i < n; i++) {
-        const wave = Math.sin(i / 4.5) * amp * 0.32 + Math.cos(i / 8.5) * amp * 0.18;
-        const noise = (Math.sin(i * 1.7) + Math.cos(i * 0.91)) * amp * 0.06;
-        const open = p;
-        const close = p + drift + wave + noise;
-        const high = Math.max(open, close) + amp * (0.25 + (i % 3) * 0.04);
-        const low = Math.min(open, close) - amp * (0.25 + ((i + 1) % 3) * 0.04);
-        arr.push({ open, high, low, close, volume: Math.round((Math.abs(close - open) + amp) * (900 + (i % 8) * 130)) });
+      let p = price + gaussian(rng) * cfg.anchor;
+      let drift = gaussian(rng) * cfg.vol * 0.08;
+      let volatility = cfg.vol * (0.75 + rng() * 0.65);
+      let microTrend = 0;
+      let eventLeft = 0;
+      for (let i = 0; i < cfg.n; i++) {
+        if (eventLeft <= 0 && rng() < .09) {
+          eventLeft = 2 + Math.floor(rng() * 7);
+          microTrend = gaussian(rng) * cfg.vol * (0.22 + rng() * 0.38);
+        }
+        if (eventLeft > 0) {
+          eventLeft -= 1;
+          microTrend *= 0.78 + rng() * 0.16;
+        } else {
+          microTrend *= 0.45 + rng() * 0.18;
+          if (rng() < .18) drift = gaussian(rng) * cfg.vol * 0.07;
+        }
+        const distance = p - price;
+        const pullback = -distance * (0.018 + rng() * 0.032);
+        volatility = clamp(volatility * (0.72 + rng() * 0.48) + Math.abs(microTrend) * 0.12, cfg.vol * 0.35, cfg.vol * 2.15);
+        const gap = rng() < .035 ? gaussian(rng) * volatility * 1.4 : 0;
+        const open = p + gap + gaussian(rng) * volatility * 0.1;
+        let move = pullback + drift + microTrend + gaussian(rng) * volatility * (0.42 + rng() * 0.5);
+        if (rng() < cfg.shock) move += gaussian(rng) * volatility * (1.8 + rng() * 2.2);
+        if (rng() < .2) move *= 0.28 + rng() * 0.45;
+        const close = open + move;
+        const body = Math.abs(close - open);
+        const impulse = body / Math.max(volatility, .1);
+        let upper = volatility * (0.08 + rng() * 0.55) + body * (0.08 + rng() * 0.22);
+        let lower = volatility * (0.08 + rng() * 0.55) + body * (0.08 + rng() * 0.22);
+        if (rng() < .1) upper += volatility * (0.9 + rng() * 2.8);
+        if (rng() < .1) lower += volatility * (0.9 + rng() * 2.8);
+        if (close < open && rng() < .2) upper *= 1.5 + rng();
+        if (close > open && rng() < .2) lower *= 1.5 + rng();
+        const high = Math.max(open, close) + upper;
+        const low = Math.min(open, close) - lower;
+        const volumeBurst = rng() < .14 ? 1.7 + rng() * 2.4 : 1;
+        const volume = Math.round((700 + rng() * 2600) * (1 + impulse * 0.9 + Math.abs(gap) / Math.max(volatility, .1) * .6) * volumeBurst);
+        arr.push({ open, high, low, close, volume });
         p = close;
       }
-      return arr;
+      const shift = price - arr.at(-1).close;
+      const shifted = arr.map((d, i) => {
+        const open = d.open + shift;
+        const close = i === arr.length - 1 ? price : d.close + shift;
+        return {
+          open,
+          close,
+          high: Math.max(d.high + shift, open, close),
+          low: Math.min(d.low + shift, open, close),
+          volume: d.volume,
+        };
+      });
+      shifted.visibleBars = cfg.visible;
+      return shifted;
     }
 
     function derived(series) {
@@ -449,30 +545,30 @@
       const chart = LightweightCharts.createChart(host, {
         width: host.clientWidth,
         height: host.clientHeight,
-        layout: { background: { color: '#0b1118' }, textColor: '#8f9fb4', attributionLogo: false },
+        layout: { background: { color: '#111821' }, textColor: '#8f9bad', attributionLogo: false },
         grid: {
-          vertLines: { color: 'rgba(255,255,255,.045)' },
-          horzLines: { color: 'rgba(255,255,255,.06)' },
+          vertLines: { color: 'rgba(75,89,108,.28)' },
+          horzLines: { color: 'rgba(75,89,108,.28)' },
         },
         crosshair: {
           mode: LightweightCharts.CrosshairMode?.Normal ?? 0,
-          vertLine: { color: 'rgba(230,184,92,.45)', style: 3, width: 1, labelBackgroundColor: '#c98f2a' },
-          horzLine: { color: 'rgba(230,184,92,.45)', style: 3, width: 1, labelBackgroundColor: '#c98f2a' },
+          vertLine: { color: 'rgba(181,193,211,.68)', style: 3, width: 1, labelBackgroundColor: '#586579' },
+          horzLine: { color: 'rgba(181,193,211,.68)', style: 3, width: 1, labelBackgroundColor: '#586579' },
         },
-        rightPriceScale: { borderColor: 'rgba(255,255,255,.09)', scaleMargins: { top: .08, bottom: .24 } },
-        timeScale: { borderColor: 'rgba(255,255,255,.09)', timeVisible: true, secondsVisible: false, rightOffset: 8, barSpacing: 9 },
+        rightPriceScale: { borderColor: 'rgba(75,89,108,.42)', scaleMargins: { top: .05, bottom: .22 } },
+        timeScale: { borderColor: 'rgba(75,89,108,.42)', timeVisible: true, secondsVisible: false, rightOffset: 9, barSpacing: 10 },
         localization: { priceFormatter: price => Number(price).toFixed(2) },
         handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
         handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
       });
       const candle = addSeriesCompat(chart, 'candlestick', {
-        upColor: '#22ab94',
-        downColor: '#f23645',
-        borderUpColor: '#22ab94',
-        borderDownColor: '#f23645',
-        wickUpColor: '#22ab94',
-        wickDownColor: '#f23645',
-        priceLineColor: '#e6b85c',
+        upColor: '#00b89f',
+        downColor: '#eb4561',
+        borderUpColor: '#00b89f',
+        borderDownColor: '#eb4561',
+        wickUpColor: '#00b89f',
+        wickDownColor: '#eb4561',
+        priceLineColor: '#eb4561',
         lastValueVisible: true,
         priceLineVisible: true,
       });
@@ -483,8 +579,8 @@
         priceLineVisible: false,
       });
       chart.priceScale('volume').applyOptions({ scaleMargins: { top: .78, bottom: 0 } });
-      const ma20 = addSeriesCompat(chart, 'line', { color: '#3dd6c4', lineWidth: 2, priceLineVisible: false, lastValueVisible: false });
-      const ma50 = addSeriesCompat(chart, 'line', { color: '#8aaeff', lineWidth: 2, priceLineVisible: false, lastValueVisible: false });
+      const ma20 = addSeriesCompat(chart, 'line', { color: '#ff8a18', lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
+      const ma50 = addSeriesCompat(chart, 'line', { color: '#2ac7c0', lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
       chart.subscribeCrosshairMove(param => {
         const tip = el('chartTooltip');
         if (!tip || !chartLayout?.data?.length) return;
@@ -509,13 +605,21 @@
       const diff = d.close - prev;
       const pct = prev ? diff / prev * 100 : 0;
       tip.innerHTML = `
-        <strong>XAUUSD · ${state.tf}</strong>
-        <span>O <b>${d.open.toFixed(2)}</b></span>
-        <span>H <b>${d.high.toFixed(2)}</b></span>
-        <span>L <b>${d.low.toFixed(2)}</b></span>
-        <span>C <b>${d.close.toFixed(2)}</b></span>
-        <span><b style="color:${diff >= 0 ? 'var(--green)' : 'var(--red)'}">${diff >= 0 ? '+' : ''}${diff.toFixed(2)} / ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</b></span>
+        <strong>时间&nbsp;&nbsp;${new Date(d.time * 1000).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false })}</strong>
+        <span>至今涨幅 <b style="color:${diff >= 0 ? '#00b89f' : '#eb4561'}">${diff >= 0 ? '+' : ''}${pct.toFixed(2)}%</b></span>
+        <span>开盘 <b style="color:#eb4561">${d.open.toFixed(2)}</b></span>
+        <span>收盘 <b style="color:#00b89f">${d.close.toFixed(2)}</b></span>
+        <span>最高 <b style="color:#eb4561">${d.high.toFixed(2)}</b></span>
+        <span>最低 <b style="color:#00b89f">${d.low.toFixed(2)}</b></span>
+        <span>涨跌额 <b style="color:${diff >= 0 ? '#00b89f' : '#eb4561'}">${diff >= 0 ? '+' : ''}${diff.toFixed(2)}</b></span>
       `;
+      const tag = el('chartPriceTag');
+      if (tag) {
+        tag.textContent = d.close.toFixed(2);
+        tag.style.background = diff >= 0 ? '#00b89f' : '#eb4561';
+      }
+      const updated = el('chartUpdated');
+      if (updated) updated.textContent = `最新 ${fmtClock().slice(0, 5)}`;
     }
 
     function drawChart(series) {
@@ -544,9 +648,13 @@
       chartLayout.volume.setData(data.map(d => ({
         time: d.time,
         value: d.volume,
-        color: d.close >= d.open ? 'rgba(34,171,148,.34)' : 'rgba(242,54,69,.34)',
+        color: d.close >= d.open ? 'rgba(0,184,159,.58)' : 'rgba(235,69,97,.58)',
       })));
-      chartLayout.chart.timeScale().fitContent();
+      const visibleBars = raw.visibleBars || 76;
+      chartLayout.chart.timeScale().setVisibleLogicalRange({
+        from: Math.max(0, data.length - visibleBars),
+        to: data.length + 4,
+      });
       renderChartTooltip(data.at(-1), data.length);
     }
 
