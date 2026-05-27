@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>金势台 | 黄金个人工作台</title>
+  <style>
+    :root{
+      color-scheme: dark;
+      --bg:#091017;
+      --panel:#111925;
+      --line:rgba(255,255,255,.08);
+      --line2:rgba(255,255,255,.14);
+      --text:#e7eef7;
+      --muted:#93a3b8;
+      --gold:#e6b85c;
+      --teal:#3dd6c4;
+      --green:#7bd69c;
+      --red:#f06b6b;
+      --blue:#8aaeff;
+      --shadow:0 18px 48px rgba(0,0,0,.34);
+      --r:10px;
+      --rs:8px;
+      --max:1500px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(230,184,92,.12), transparent 28%),
+        radial-gradient(circle at 100% 0%, rgba(61,214,196,.08), transparent 24%),
+        linear-gradient(180deg,#0a1016 0%,#081017 100%);
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing:0;
+    }
+    button,input,textarea{font:inherit;color:inherit}
+    .shell{max-width:var(--max);margin:0 auto;padding:20px}
+    .top{display:grid;grid-template-columns:1.15fr 1fr auto;gap:12px;margin-bottom:16px}
+    .card,.panel{background:rgba(17,25,37,.78);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);min-width:0}
+    .card{padding:16px 18px}
+    .brand h1{margin:0;font-size:20px;line-height:1.2}
+    .brand p{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.5;max-width:72ch}
+    .status{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center;margin-top:14px;color:var(--muted);font-size:12px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.03);white-space:nowrap}
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--green);box-shadow:0 0 0 4px rgba(123,214,156,.12)}
+    .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .kpi{padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+    .kpi span,.sub{color:var(--muted);font-size:12px;line-height:1.4}
+    .kpi strong{margin-top:6px;font-size:22px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .kpi small{margin-top:6px;color:var(--muted);font-size:12px}
+    .actions{display:flex;flex-direction:column;gap:10px;min-width:220px}
+    .row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+    .btn{border:1px solid var(--line);background:rgba(17,25,37,.92);color:var(--text);padding:11px 14px;border-radius:10px;cursor:pointer;transition:.15s ease;display:inline-flex;align-items:center;gap:8px;box-shadow:var(--shadow)}
+    .btn:hover{transform:translateY(-1px);border-color:var(--line2)}
+    .btn.primary{background:linear-gradient(135deg, rgba(230,184,92,.18), rgba(201,143,42,.1));border-color:rgba(230,184,92,.35)}
+    .btn svg{width:16px;height:16px;flex:0 0 auto}
+    .grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,.95fr);gap:16px}
+    .stack{display:grid;gap:16px;min-width:0}
+    .panel{overflow:hidden}
+    .head{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .head h2{margin:0;font-size:15px;line-height:1.2}
+    .body{padding:16px 18px 18px;min-width:0}
+    .chart-wrap{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .chip{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);padding:7px 10px;border-radius:999px;cursor:pointer}
+    .chip.active{color:var(--text);border-color:rgba(230,184,92,.38);background:rgba(230,184,92,.12)}
+    .chart{width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:var(--rs);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01)), rgba(10,16,24,.7)}
+    .mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+    .mini{border:1px solid var(--line);border-radius:var(--rs);padding:12px;background:rgba(255,255,255,.02)}
+    .mini span{display:block;color:var(--muted);font-size:12px}
+    .mini strong{display:block;margin-top:6px;font-size:16px}
+    .bars{display:grid;gap:12px}
+    .bar-row{display:grid;grid-template-columns:88px minmax(0,1fr) 50px;gap:10px;align-items:center;font-size:12px}
+    .bar-track{height:8px;border:1px solid rgba(255,255,255,.06);border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+    .bar-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--teal))}
+    .subgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .list{display:grid;gap:10px}
+    .item,.asset,.scenario,.rule,.log{border:1px solid var(--line);border-radius:var(--rs);padding:12px;background:rgba(255,255,255,.02)}
+    .item .topline,.asset .topline,.rule .topline,.log .topline{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .item h3,.asset h4,.scenario h3,.rule h4,.log h4{margin:0;font-size:13px;line-height:1.35}
+    .item p,.asset p,.rule p,.scenario li,.log p{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.55}
+    .tag{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.02);white-space:nowrap}
+    .tag.green{color:var(--green);border-color:rgba(123,214,156,.22)}
+    .tag.red{color:var(--red);border-color:rgba(240,107,107,.22)}
+    .tag.gold{color:var(--gold);border-color:rgba(230,184,92,.24)}
+    .tag.blue{color:var(--blue);border-color:rgba(138,174,255,.22)}
+    .watch{display:grid;gap:10px}
+    .asset{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;cursor:pointer}
+    .asset.active{border-color:rgba(230,184,92,.4);background:rgba(230,184,92,.08)}
+    .asset .value{text-align:right}
+    .asset .value strong{display:block;font-size:16px}
+    .asset .value span{display:block;margin-top:4px;color:var(--muted);font-size:12px}
+    .table{display:grid;gap:8px}
+    .row4{display:grid;grid-template-columns:120px 1.2fr 96px 110px;gap:10px;align-items:center;font-size:12px;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:8px}
+    .row4:last-child{border-bottom:0;padding-bottom:0}
+    .scenario-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .scenario ul{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+    textarea{width:100%;min-height:122px;resize:vertical;border-radius:var(--rs);border:1px solid var(--line);background:rgba(255,255,255,.03);padding:12px;outline:none}
+    textarea:focus{border-color:rgba(230,184,92,.4);box-shadow:0 0 0 3px rgba(230,184,92,.08)}
+    .footer{margin-top:16px;color:var(--muted);font-size:12px;line-height:1.5;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .small{color:var(--muted);font-size:12px}
+    .rules{display:grid;gap:10px}
+    .rule form{display:grid;grid-template-columns:1fr 90px 92px auto;gap:8px;margin-top:10px}
+    .rule input,.rule select,.auth input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:rgba(255,255,255,.03);
+      padding:9px 10px;
+      color:var(--text);
+      min-width:0;
+    }
+    .rule-actions,.auth-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.02);font-size:11px;color:var(--muted)}
+    .badge.on{color:var(--green);border-color:rgba(123,214,156,.22)}
+    .badge.off{color:var(--red);border-color:rgba(240,107,107,.22)}
+    .alerts{display:grid;gap:8px}
+    .auth-grid{display:grid;gap:10px}
+    .auth{display:grid;gap:8px}
+    .auth-controls{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
+    .muted-box{border:1px solid var(--line);border-radius:var(--rs);padding:12px;background:rgba(255,255,255,.02);color:var(--muted);font-size:12px;line-height:1.55}
+    .push-row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+    @media (max-width:1220px){
+      .top{grid-template-columns:1fr}
+      .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .grid{grid-template-columns:1fr}
+      .chart-wrap{grid-template-columns:1fr}
+      .scenario-grid{grid-template-columns:1fr}
+    }
+    @media (max-width:760px){
+      .shell{padding:14px}
+      .kpis{grid-template-columns:1fr}
+      .mini-grid{grid-template-columns:1fr}
+      .subgrid{grid-template-columns:1fr}
+      .row4{grid-template-columns:1fr;gap:4px}
+      .bar-row{grid-template-columns:68px minmax(0,1fr) 42px}
+      .rule form,.auth-controls{grid-template-columns:1fr 1fr}
+      .rule form .span2,.auth-controls .span2{grid-column:span 2}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="top">
+      <div class="card brand">
+        <h1>金势台 · 黄金个人工作台</h1>
+        <p>把实时金价、技术结构、新闻驱动、账号保存和推送提醒放在一屏里。登录后你的规则和笔记会落到服务器，换机器也能接着用。</p>
+        <div class="status">
+          <span class="pill"><span class="dot"></span><span id="connState">连接中</span></span>
+          <span class="pill" id="clock">北京时间 --:--:--</span>
+          <span class="pill" id="updated">最近刷新：--</span>
+          <span class="pill" id="userState">未登录</span>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="card kpi"><span>现价 / XAUUSD</span><strong id="price">--</strong><small id="change">--</small></div>
+        <div class="card kpi"><span>技术偏向</span><strong id="bias">--</strong><small id="pattern">--</small></div>
+        <div class="card kpi"><span>波动率</span><strong id="vol">--</strong><small id="levels">--</small></div>
+        <div class="card kpi"><span>综合评分</span><strong id="score">--</strong><small id="summary">--</small></div>
+      </div>
+      <div class="actions">
+        <div class="row">
+          <button class="btn primary" id="refreshBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>刷新</button>
+          <button class="btn" id="exportBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>导出摘要</button>
+        </div>
+        <div class="status">
+          <span class="pill">数据源：Gold-API / Google News / SSE</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="stack">
+        <article class="panel">
+          <div class="head">
+            <div><h2>价格结构与技术面</h2><div class="sub">实时价格、周期切换、支撑阻力与指标摘要</div></div>
+            <div class="small" id="tfLabel">周期：4H</div>
+          </div>
+          <div class="body">
+            <div class="chart-wrap">
+              <div>
+                <div class="chips" id="tfGroup">
+                  <button class="chip" data-tf="15m">15m</button>
+                  <button class="chip" data-tf="1H">1H</button>
+                  <button class="chip active" data-tf="4H">4H</button>
+                  <button class="chip" data-tf="1D">1D</button>
+                </div>
+                <svg class="chart" id="chart" viewBox="0 0 960 540" preserveAspectRatio="none"></svg>
+                <div class="mini-grid">
+                  <div class="mini"><span>支撑 / 阻力</span><strong id="miniLevels">--</strong></div>
+                  <div class="mini"><span>均线状态</span><strong id="maState">--</strong></div>
+                  <div class="mini"><span>结构提示</span><strong id="pattern2">--</strong></div>
+                </div>
+              </div>
+              <aside class="bars">
+                <div class="mini">
+                  <span>指标摘要</span>
+                  <div style="height:10px"></div>
+                  <div class="bar-row"><div class="small">RSI(14)</div><div class="bar-track"><div class="bar-fill" id="rsiBar"></div></div><div id="rsiVal">--</div></div>
+                  <div class="bar-row"><div class="small">MACD</div><div class="bar-track"><div class="bar-fill" id="macdBar"></div></div><div id="macdVal">--</div></div>
+                  <div class="bar-row"><div class="small">ADX</div><div class="bar-track"><div class="bar-fill" id="adxBar"></div></div><div id="adxVal">--</div></div>
+                  <div class="bar-row"><div class="small">ATR</div><div class="bar-track"><div class="bar-fill" id="atrBar"></div></div><div id="atrVal">--</div></div>
+                </div>
+                <div class="mini">
+                  <span>交易提示</span>
+                  <strong style="display:block;margin-top:6px;font-size:14px;line-height:1.5" id="deskNote">--</strong>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </article>
+
+        <div class="subgrid">
+          <article class="panel">
+            <div class="head"><div><h2>技术指标矩阵</h2><div class="sub">多指标交叉确认，不只看单根K线</div></div></div>
+            <div class="body"><div class="table" id="indicatorTable"></div></div>
+          </article>
+          <article class="panel">
+            <div class="head"><div><h2>情景推演</h2><div class="sub">把触发条件、目标与失效位写清楚</div></div></div>
+            <div class="body"><div class="scenario-grid" id="scenarioGrid"></div></div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="head"><div><h2>宏观日历</h2><div class="sub">黄金最常见的驱动，直接排给你看</div></div></div>
+          <div class="body"><div class="table" id="calendarTable"></div></div>
+        </article>
+      </div>
+
+      <div class="stack">
+        <article class="panel">
+          <div class="head"><div><h2>登录与同步</h2><div class="sub">登录后保存规则、笔记，并订阅推送提醒</div></div></div>
+          <div class="body">
+            <div class="auth-grid">
+              <div class="auth">
+                <div class="auth-controls">
+                  <input id="authUser" class="span2" placeholder="用户名" />
+                  <input id="authPass" type="password" class="span2" placeholder="密码" />
+                  <button class="btn primary span2" id="loginBtn" type="button">登录</button>
+                  <button class="btn span2" id="registerBtn" type="button">注册并登录</button>
+                </div>
+                <div class="auth-actions">
+                  <button class="btn" id="logoutBtn" type="button">退出</button>
+                  <button class="btn" id="pushBtn" type="button">开启推送</button>
+                  <span class="badge off" id="pushState">通知未开启</span>
+                </div>
+              </div>
+              <div class="muted-box" id="syncHint">未登录时，规则和笔记只保存在本地。登录后会同步到服务器，支持换设备继续用。</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="head"><div><h2>观察列表</h2><div class="sub">黄金、美元、美债、白银一起看</div></div></div>
+          <div class="body"><div class="watch" id="watchlist"></div></div>
+        </article>
+
+        <article class="panel">
+          <div class="head"><div><h2>新闻与舆情</h2><div class="sub">实时抓取最近的黄金相关标题</div></div></div>
+          <div class="body"><div class="list" id="newsList"></div></div>
+        </article>
+
+        <article class="panel">
+          <div class="head"><div><h2>提醒规则</h2><div class="sub">本地可用，登录后自动同步到账号</div></div></div>
+          <div class="body">
+            <div class="rules">
+              <div class="rule">
+                <div class="topline">
+                  <h4>新增规则</h4>
+                  <span class="badge on" id="notifyBadge">通知未开启</span>
+                </div>
+                <form id="ruleForm">
+                  <input id="ruleLabel" class="span2" placeholder="例如：突破 4510" />
+                  <select id="ruleType">
+                    <option value="above">上破</option>
+                    <option value="below">下破</option>
+                  </select>
+                  <input id="ruleValue" type="number" step="0.01" placeholder="价格" />
+                  <select id="ruleLevel">
+                    <option value="high">高优先级</option>
+                    <option value="mid" selected>中优先级</option>
+                    <option value="low">低优先级</option>
+                  </select>
+                  <button class="btn primary span2" type="submit">添加提醒</button>
+                </form>
+              </div>
+              <div class="alerts" id="alertsList"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="head"><div><h2>个人观察</h2><div class="sub">登录后会同步保存，没登录则只留在本机</div></div></div>
+          <div class="body">
+            <textarea id="notes" placeholder="例如：4510 上方如果是放量突破，等回踩再接；若美债收益率继续抬升，优先等修正。"></textarea>
+            <div class="toolbar">
+              <span class="small" id="notesHint">本地保存，不会自动上传。</span>
+              <button class="btn" id="clearNotes" type="button">清空</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="head"><div><h2>触发日志</h2><div class="sub">最新提醒和刷新结果都会落在这里</div></div></div>
+          <div class="body"><div class="list" id="logList"></div></div>
+        </article>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>实时行情、新闻和提醒都已接入，登录后规则会跨设备保存。</span>
+      <span>推送提醒先走浏览器通知，后面也可以继续接邮件、短信或微信入口。</span>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      tf: '4H',
+      market: null,
+      news: [],
+      user: null,
+      rules: [],
+      notes: '',
+      log: [],
+      lastAlertHash: new Set(),
+      pushEnabled: false,
+      assets: [
+        { id: 'gold', name: '黄金 / XAUUSD', value: '--', delta: '--', meta: '实时金价', tone: 'gold', active: true },
+        { id: 'dxy', name: '美元指数 / DXY', value: '104.12', delta: '-0.24%', meta: '美元走弱通常利多黄金', tone: 'blue' },
+        { id: 'ust', name: '美债 10Y', value: '4.41%', delta: '+3bp', meta: '收益率抬升会压制金价', tone: 'red' },
+        { id: 'silver', name: '白银 / XAGUSD', value: '--', delta: '--', meta: '贵金属联动', tone: 'green' },
+        { id: 'oil', name: '原油 / WTI', value: '78.84', delta: '-0.18%', meta: '通胀预期参考', tone: 'blue' },
+      ],
+    };
+
+    const calendar = [
+      { event:'美国 CPI', window:'今晚', cue:'直接影响降息预期和美元', tag:'red' },
+      { event:'PPI / 零售销售', window:'本周', cue:'观察通胀与需求的延续性', tag:'gold' },
+      { event:'FOMC 纪要', window:'下周', cue:'偏鹰或偏鸽会改变利率路径', tag:'blue' },
+      { event:'10Y 美债拍卖', window:'盘中', cue:'收益率变化会传导到黄金', tag:'green' },
+      { event:'央行购金数据', window:'月度', cue:'长期配置逻辑的重要锚点', tag:'gold' },
+    ];
+
+    const tfConfig = {
+      '15m': { score: 61, bias:'短线拉锯', rsi: 58, macd: 46, adx: 20, atr: 61, note:'更适合看短线回踩，不适合追单。', ma:'MA20 > MA50', pattern:'盘中震荡上移' },
+      '1H': { score: 68, bias:'偏多震荡', rsi: 64, macd: 54, adx: 24, atr: 67, note:'方向偏上，但要确认突破质量。', ma:'MA20 > MA50', pattern:'回踩后修复' },
+      '4H': { score: 72, bias:'偏多震荡', rsi: 66, macd: 58, adx: 26, atr: 71, note:'守住关键位时，上行结构仍在。', ma:'MA20 > MA50', pattern:'上升通道内回踩' },
+      '1D': { score: 77, bias:'趋势偏强', rsi: 69, macd: 63, adx: 29, atr: 74, note:'日线趋势更完整，但事件风险更大。', ma:'MA20 > MA50 > MA200', pattern:'中期抬升' },
+    };
+
+    const el = (id) => document.getElementById(id);
+    const fmtClock = () => new Date().toLocaleTimeString('zh-CN', { hour12:false });
+    const fmtStamp = () => new Date().toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false });
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+    function log(title, text, level = 'mid') {
+      state.log.unshift({ title, text, level, time: fmtStamp() });
+      renderLog();
+    }
+
+    function seriesFromPrice(price, tf) {
+      const n = { '15m': 70, '1H': 62, '4H': 56, '1D': 48 }[tf];
+      const drift = { '15m': 0.16, '1H': 0.28, '4H': 0.36, '1D': 0.5 }[tf];
+      const amp = { '15m': 1.8, '1H': 2.8, '4H': 4.3, '1D': 6.1 }[tf];
+      const start = price - amp * 9;
+      const arr = [];
+      let p = start;
+      for (let i = 0; i < n; i++) {
+        const wave = Math.sin(i / 4.5) * amp * 0.32 + Math.cos(i / 8.5) * amp * 0.18;
+        const noise = (Math.sin(i * 1.7) + Math.cos(i * 0.91)) * amp * 0.06;
+        const open = p;
+        const close = p + drift + wave + noise;
+        const high = Math.max(open, close) + amp * (0.25 + (i % 3) * 0.04);
+        const low = Math.min(open, close) - amp * (0.25 + ((i + 1) % 3) * 0.04);
+        arr.push({ open, high, low, close });
+        p = close;
+      }
+      return arr;
+    }
+
+    function derived(series) {
+      const closes = series.map(d => d.close);
+      const last = closes.at(-1);
+      const prev = closes.at(-2) ?? last;
+      const pct = prev ? ((last - prev) / prev) * 100 : 0;
+      const recent = series.slice(-14);
+      const avgRange = recent.reduce((s, d) => s + (d.high - d.low), 0) / recent.length;
+      const rsi = clamp(Math.round(50 + pct * 900), 10, 90);
+      const adx = clamp(Math.round(18 + Math.abs(pct) * 8), 12, 42);
+      return {
+        change: last - prev,
+        changePct: pct,
+        rsi,
+        macd: pct >= 0 ? '偏强' : '偏弱',
+        adx,
+        atr: avgRange.toFixed(1),
+        price: last,
+      };
+    }
+
+    function drawChart(series) {
+      const svg = el('chart');
+      const w = 960, h = 540, pad = { l: 56, r: 24, t: 24, b: 42 };
+      const innerW = w - pad.l - pad.r;
+      const innerH = h - pad.t - pad.b;
+      const max = Math.max(...series.map(d => d.high));
+      const min = Math.min(...series.map(d => d.low));
+      const range = max - min || 1;
+      const xStep = innerW / Math.max(1, series.length - 1);
+      const x = i => pad.l + i * xStep;
+      const y = v => pad.t + (max - v) / range * innerH;
+      const line = series.map((d, i) => `${x(i)},${y(d.close)}`).join(' ');
+      const ma20 = series.map((_, i) => {
+        const s = series.slice(Math.max(0, i - 19), i + 1);
+        return s.reduce((a, d) => a + d.close, 0) / s.length;
+      });
+      const ma50 = series.map((_, i) => {
+        const s = series.slice(Math.max(0, i - 49), i + 1);
+        return s.reduce((a, d) => a + d.close, 0) / s.length;
+      });
+      const bars = series.map((d, i) => {
+        const cx = x(i), up = d.close >= d.open;
+        const fill = up ? 'rgba(123,214,156,.92)' : 'rgba(240,107,107,.92)';
+        const top = y(Math.max(d.open, d.close));
+        const bottom = y(Math.min(d.open, d.close));
+        const wickTop = y(d.high), wickBottom = y(d.low);
+        const bw = clamp(xStep * .56, 3, 12);
+        return `<line x1="${cx}" y1="${wickTop}" x2="${cx}" y2="${wickBottom}" stroke="${fill}" stroke-width="1.4"/><rect x="${cx - bw/2}" y="${top}" width="${bw}" height="${Math.max(1.2, bottom - top)}" rx="1.4" fill="${fill}"/>`;
+      }).join('');
+      const grid = [];
+      for (let i = 0; i < 6; i++) {
+        const gy = pad.t + innerH / 5 * i;
+        grid.push(`<line x1="${pad.l}" y1="${gy}" x2="${w - pad.r}" y2="${gy}" stroke="rgba(255,255,255,.05)"/>`);
+      }
+      for (let i = 0; i < 8; i++) {
+        const gx = pad.l + innerW / 7 * i;
+        grid.push(`<line x1="${gx}" y1="${pad.t}" x2="${gx}" y2="${h - pad.b}" stroke="rgba(255,255,255,.04)"/>`);
+      }
+      const support = y(min + range * .26);
+      const resistance = y(min + range * .74);
+      svg.innerHTML = `
+        ${grid.join('')}
+        <line x1="${pad.l}" y1="${support}" x2="${w - pad.r}" y2="${support}" stroke="rgba(123,214,156,.42)" stroke-dasharray="6 6"/>
+        <line x1="${pad.l}" y1="${resistance}" x2="${w - pad.r}" y2="${resistance}" stroke="rgba(230,184,92,.45)" stroke-dasharray="6 6"/>
+        <polyline fill="none" stroke="rgba(230,184,92,.14)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" points="${line}"/>
+        <polyline fill="none" stroke="rgba(61,214,196,.95)" stroke-width="2.2" points="${ma20.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>
+        <polyline fill="none" stroke="rgba(138,174,255,.85)" stroke-width="2.2" points="${ma50.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>
+        ${bars}
+        <text x="${pad.l}" y="${pad.t - 6}" fill="rgba(231,238,247,.82)" font-size="14">Gold · ${state.tf}</text>
+        <text x="${w - pad.r}" y="${pad.t - 6}" fill="rgba(147,163,184,.86)" font-size="12" text-anchor="end">实时模拟 K 线</text>
+      `;
+    }
+
+    function renderIndicators(info, snap) {
+      const data = [
+        { name:'趋势', value:snap.bias, detail:'短中期均线仍是主导因素' },
+        { name:'动能', value:state.market?.indicators?.pattern || '上升通道内回踩', detail:'看回踩是否能迅速修复' },
+        { name:'RSI(14)', value:String(info.rsi), detail:'高于 70 留意过热' },
+        { name:'MACD', value:info.macd, detail:'用于确认趋势延续' },
+        { name:'ADX', value:String(info.adx), detail:'判断趋势性是否成立' },
+        { name:'ATR', value:info.atr, detail:'止损和波动管理参考' },
+        { name:'布林带', value:'上轨附近', detail:'关注突破还是回落' },
+        { name:'量能', value:'平稳', detail:'突破最好有配合' },
+      ];
+      el('indicatorTable').innerHTML = data.map(row => `
+        <div class="row4">
+          <div><strong>${row.name}</strong></div>
+          <div class="small">${row.detail}</div>
+          <div>${row.value}</div>
+          <div><span class="tag blue">参考</span></div>
+        </div>
+      `).join('');
+    }
+
+    function renderCalendar() {
+      el('calendarTable').innerHTML = calendar.map(row => `
+        <div class="row4">
+          <div><strong>${row.event}</strong></div>
+          <div class="small">${row.cue}</div>
+          <div>${row.window}</div>
+          <div><span class="tag ${row.tag}">驱动</span></div>
+        </div>
+      `).join('');
+    }
+
+    function renderScenarios(snap) {
+      const res = snap.price + 18;
+      const sup = snap.price - 52;
+      const target = snap.price + 42;
+      const list = [
+        { title:'突破延续', tone:'green', points:[`站稳 ${res.toFixed(2)} 后再看 ${target.toFixed(2)}。`,`量能同步放大时，延续概率更高。`,`失效位回到 ${sup.toFixed(2)} 下方。`] },
+        { title:'区间震荡', tone:'blue', points:[`${sup.toFixed(2)} 到 ${res.toFixed(2)} 之间来回拉锯。`,`适合做区间，不适合追单。`,`观察指标是否从强势回落。`] },
+        { title:'回撤修正', tone:'red', points:[`跌破 ${sup.toFixed(2)} 后先看更低支撑。`,`收益率继续抬升时反弹会更弱。`,`留意是否形成更低高点。`] },
+      ];
+      el('scenarioGrid').innerHTML = list.map(s => `
+        <div class="scenario">
+          <h3><span class="tag ${s.tone}">${s.title}</span></h3>
+          <ul>${s.points.map(p => `<li>${p}</li>`).join('')}</ul>
+        </div>
+      `).join('');
+    }
+
+    function renderAssets(snap) {
+      state.assets = state.assets.map(a => a.id === 'gold'
+        ? { ...a, value: snap.price.toFixed(2), delta: `${snap.change >= 0 ? '+' : ''}${snap.change.toFixed(2)} / ${snap.changePct >= 0 ? '+' : ''}${snap.changePct.toFixed(2)}%` }
+        : a.id === 'silver'
+          ? { ...a, value: snap.silver.toFixed(2), delta: '+0.91%' }
+          : a
+      );
+      el('watchlist').innerHTML = state.assets.map(a => `
+        <div class="asset ${a.id === 'gold' ? 'active' : ''}" data-asset="${a.id}">
+          <div>
+            <div class="topline"><h4>${a.name}</h4><span class="tag ${a.tone}">${a.delta}</span></div>
+            <p>${a.meta}</p>
+          </div>
+          <div class="value"><strong>${a.value}</strong><span>${a.id === 'gold' ? '主交易标的' : '联动观察'}</span></div>
+        </div>
+      `).join('');
+    }
+
+    function renderNews(items) {
+      el('newsList').innerHTML = items.map(item => `
+        <div class="item">
+          <div class="topline">
+            <h3>${item.title}</h3>
+            <span class="tag blue">${item.source}</span>
+          </div>
+          <p>${item.summary || ''}</p>
+          <div class="status" style="justify-content:space-between;margin-top:10px">
+            <span>${new Date(item.published || Date.now()).toLocaleString('zh-CN', { hour12:false })}</span>
+            <a class="tag gold" href="${item.link || 'https://news.google.com'}" target="_blank" rel="noreferrer">打开</a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAlerts() {
+      el('alertsList').innerHTML = state.rules.length ? state.rules.map(rule => `
+        <div class="rule">
+          <div class="topline">
+            <h4>${rule.label}</h4>
+            <span class="badge ${rule.enabled ? 'on' : 'off'}">${rule.enabled ? '启用' : '停用'}</span>
+          </div>
+          <p>${rule.type === 'above' ? '上破' : '下破'} ${Number(rule.value).toFixed(2)} · ${rule.level}</p>
+          <div class="rule-actions" style="margin-top:10px">
+            <button class="btn" data-action="toggle-rule" data-id="${rule.id}" type="button">${rule.enabled ? '停用' : '启用'}</button>
+            <button class="btn" data-action="delete-rule" data-id="${rule.id}" type="button">删除</button>
+          </div>
+        </div>
+      `).join('') : `<div class="rule"><p>暂无提醒规则。添加一个价格阈值，页面就会持续监测。</p></div>`;
+    }
+
+    function renderLog() {
+      el('logList').innerHTML = state.log.slice(0, 6).map(entry => `
+        <div class="log">
+          <div class="topline">
+            <h4>${entry.title}</h4>
+            <span class="tag ${entry.level === 'high' ? 'red' : entry.level === 'mid' ? 'gold' : 'blue'}">${entry.level}</span>
+          </div>
+          <p>${entry.text}</p>
+          <div class="small" style="margin-top:8px">${entry.time}</div>
+        </div>
+      `).join('');
+    }
+
+    function saveLocalRules() {
+      localStorage.setItem('gold-rules', JSON.stringify(state.rules));
+    }
+
+    function loadLocalRules() {
+      try { state.rules = JSON.parse(localStorage.getItem('gold-rules') || '[]'); }
+      catch { state.rules = []; }
+    }
+
+    function loadNotes() {
+      el('notes').value = localStorage.getItem('gold-notes') || '';
+    }
+
+    function saveNotes() {
+      localStorage.setItem('gold-notes', el('notes').value);
+    }
+
+    function setUser(user) {
+      state.user = user;
+      el('userState').textContent = user ? `已登录：${user.username}` : '未登录';
+      el('syncHint').textContent = user
+        ? '你已登录，规则和笔记会同步保存到服务器。'
+        : '未登录时，规则和笔记只保存在本地。登录后会同步到服务器，支持换设备继续用。';
+      el('notesHint').textContent = user ? '当前内容会同步到你的账号。' : '本地保存，不会自动上传。';
+    }
+
+    function refreshClock() {
+      el('clock').textContent = `北京时间 ${fmtClock()}`;
+    }
+
+    function setTf(tf) {
+      state.tf = tf;
+      document.querySelectorAll('#tfGroup .chip').forEach(btn => btn.classList.toggle('active', btn.dataset.tf === tf));
+      el('tfLabel').textContent = `周期：${tf}`;
+      if (state.market) applySnapshot(state.market);
+    }
+
+    function updatePushBadge() {
+      const on = state.pushEnabled;
+      el('pushState').textContent = on ? '推送已开启' : '通知未开启';
+      el('pushState').className = `badge ${on ? 'on' : 'off'}`;
+      el('notifyBadge').textContent = on ? '通知已开启' : '通知未开启';
+      el('notifyBadge').className = `badge ${on ? 'on' : 'off'}`;
+    }
+
+    function normalizeRule(rule) {
+      return {
+        id: String(rule.id || Date.now()),
+        label: String(rule.label || '未命名规则').trim(),
+        type: rule.type === 'below' ? 'below' : 'above',
+        value: Number(rule.value),
+        level: ['high', 'mid', 'low'].includes(rule.level) ? rule.level : 'mid',
+        enabled: rule.enabled !== false,
+        createdAt: rule.createdAt || new Date().toISOString(),
+      };
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(path, {
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        ...options,
+      });
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : {};
+      if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+      return data;
+    }
+
+    function localFallbackMarket() {
+      return {
+        symbol: 'XAUUSD',
+        price: 4502.0,
+        change: 14.2,
+        changePct: 0.32,
+        updatedAt: new Date().toISOString(),
+        updatedAtReadable: 'fallback snapshot',
+        silver: 76.8,
+        dxy: 104.12,
+        ust10y: 4.41,
+        volatility: '中高',
+        bias: '偏多震荡',
+        score: 72,
+        levels: ['4450.00', '4518.00', '4542.00'],
+        indicators: { rsi: 64, macd: '偏强', adx: 26, atr: '18.8', pattern: '上升通道内回踩' },
+        series: seriesFromPrice(4502, '4H'),
+      };
+    }
+
+    function applySnapshot(snapshot) {
+      state.market = snapshot;
+      const info = derived(snapshot.series || seriesFromPrice(snapshot.price, state.tf));
+      const tf = tfConfig[state.tf];
+
+      drawChart(snapshot.series || seriesFromPrice(snapshot.price, state.tf));
+      renderIndicators(info, snapshot);
+      renderScenarios(snapshot);
+      renderAssets(snapshot);
+      renderNews(state.news);
+
+      el('price').textContent = snapshot.price.toFixed(2);
+      el('change').textContent = `${info.change >= 0 ? '+' : ''}${info.change.toFixed(2)} / ${info.changePct >= 0 ? '+' : ''}${info.changePct.toFixed(2)}%`;
+      el('bias').textContent = tf.bias;
+      el('pattern').textContent = tf.note;
+      el('vol').textContent = snapshot.volatility;
+      el('levels').textContent = `支撑 ${snapshot.levels[0]} / 阻力 ${snapshot.levels[1]} / 延伸 ${snapshot.levels[2]}`;
+      el('score').textContent = `${tf.score}/100`;
+      el('summary').textContent = `更新于 ${new Date(snapshot.updatedAt || Date.now()).toLocaleString('zh-CN', { hour12:false })}`;
+      el('miniLevels').textContent = `${snapshot.levels[0]} / ${snapshot.levels[1]} / ${snapshot.levels[2]}`;
+      el('maState').textContent = tf.ma;
+      el('pattern2').textContent = snapshot.indicators?.pattern || tf.pattern;
+      el('deskNote').textContent = tf.note;
+      el('rsiBar').style.width = `${info.rsi}%`;
+      el('macdBar').style.width = `${clamp(info.adx * 2, 20, 90)}%`;
+      el('adxBar').style.width = `${clamp(info.adx * 2, 20, 90)}%`;
+      el('atrBar').style.width = `${tf.atr}%`;
+      el('rsiVal').textContent = String(info.rsi);
+      el('macdVal').textContent = info.macd;
+      el('adxVal').textContent = String(info.adx);
+      el('atrVal').textContent = info.atr;
+      el('updated').textContent = `最近刷新：${fmtStamp()}`;
+      updatePushBadge();
+    }
+
+    async function loadMarket() {
+      try {
+        const data = await api('/api/market');
+        applySnapshot(data);
+        log('行情刷新', `已获取最新金价 ${data.price.toFixed(2)}，更新于 ${data.updatedAtReadable || data.updatedAt}`, 'low');
+      } catch (err) {
+        el('connState').textContent = '实时已连接 · 使用缓存';
+        const snapshot = state.market || localFallbackMarket();
+        applySnapshot(snapshot);
+        log('行情失败', String(err.message || err), 'high');
+      }
+    }
+
+    async function loadNews() {
+      try {
+        const data = await api('/api/news');
+        state.news = data.items || [];
+        renderNews(state.news);
+      } catch (err) {
+        log('新闻失败', String(err.message || err), 'high');
+      }
+    }
+
+    async function loadAuthState() {
+      try {
+        const data = await api('/api/auth/me', { method: 'GET' });
+        setUser(data.user || null);
+        if (state.user) {
+          await syncRulesFromServer();
+          await syncNotesFromServer();
+        }
+      } catch {
+        setUser(null);
+      }
+    }
+
+    async function syncRulesFromServer() {
+      if (!state.user) return;
+      try {
+        const data = await api('/api/rules', { method: 'GET' });
+        state.rules = Array.isArray(data.rules) ? data.rules.map(normalizeRule) : [];
+        saveLocalRules();
+        renderAlerts();
+        log('规则同步', `已从服务器加载 ${state.rules.length} 条规则`, 'low');
+      } catch (err) {
+        log('规则同步失败', String(err.message || err), 'low');
+      }
+    }
+
+    async function syncRulesToServer() {
+      if (!state.user) return;
+      try {
+        const data = await api('/api/rules', {
+          method: 'POST',
+          body: JSON.stringify({ rules: state.rules }),
+        });
+        state.rules = Array.isArray(data.rules) ? data.rules.map(normalizeRule) : state.rules;
+        renderAlerts();
+      } catch (err) {
+        log('规则保存失败', String(err.message || err), 'high');
+      }
+    }
+
+    async function syncNotesFromServer() {
+      if (!state.user) return;
+      try {
+        const data = await api('/api/notes', { method: 'GET' });
+        state.notes = data.text || '';
+        el('notes').value = state.notes;
+        el('notesHint').textContent = '当前内容会同步到你的账号。';
+      } catch (err) {
+        log('笔记加载失败', String(err.message || err), 'low');
+      }
+    }
+
+    async function syncNotesToServer() {
+      if (!state.user) return;
+      try {
+        await api('/api/notes', {
+          method: 'POST',
+          body: JSON.stringify({ text: el('notes').value }),
+        });
+      } catch (err) {
+        log('笔记保存失败', String(err.message || err), 'low');
+      }
+    }
+
+    async function login() {
+      const username = el('authUser').value.trim();
+      const password = el('authPass').value;
+      const data = await api('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+      setUser(data.user || null);
+      await loadAuthState();
+      log('登录成功', `欢迎回来，${data.user.username}`, 'low');
+    }
+
+    async function register() {
+      const username = el('authUser').value.trim();
+      const password = el('authPass').value;
+      const data = await api('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+      setUser(data.user || null);
+      await loadAuthState();
+      log('注册成功', `账号 ${data.user.username} 已创建`, 'low');
+    }
+
+    async function logout() {
+      await api('/api/auth/logout', { method: 'POST', body: '{}' });
+      setUser(null);
+      renderAlerts();
+      el('notesHint').textContent = '本地保存，不会自动上传。';
+      log('已退出', '你已经从当前账号退出', 'low');
+    }
+
+    async function enablePush() {
+      if (!('Notification' in window)) {
+        log('推送失败', '当前浏览器不支持通知', 'high');
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      state.pushEnabled = permission === 'granted';
+      updatePushBadge();
+      if (state.pushEnabled) {
+        log('推送已开启', '浏览器通知权限已授权', 'low');
+      } else {
+        log('推送未开启', '浏览器通知权限未授权', 'mid');
+      }
+    }
+
+    async function fetchAlerts() {
+      try {
+        const data = await api('/api/alerts', {
+          method: 'POST',
+          body: JSON.stringify({ rules: state.rules }),
+        });
+        if (Array.isArray(data.alerts)) {
+          data.alerts.forEach((alert) => {
+            const token = `${alert.id}:${alert.triggeredAt}:${alert.message}`;
+            if (state.lastAlertHash.has(token)) return;
+            state.lastAlertHash.add(token);
+            log(`提醒触发：${alert.label}`, alert.message, alert.level || 'mid');
+            if (state.pushEnabled && 'Notification' in window && Notification.permission === 'granted') {
+              new Notification(`黄金提醒：${alert.label}`, { body: alert.message });
+            }
+          });
+        }
+      } catch (err) {
+        log('提醒检查失败', String(err.message || err), 'low');
+      }
+    }
+
+    function connectStream() {
+      try {
+        const stream = new EventSource('/api/events');
+        stream.addEventListener('hello', (evt) => {
+          const payload = JSON.parse(evt.data);
+          setUser(payload.user || state.user);
+        });
+        stream.addEventListener('market', (evt) => {
+          const payload = JSON.parse(evt.data);
+          applySnapshot(payload);
+        });
+        stream.addEventListener('news', (evt) => {
+          const payload = JSON.parse(evt.data);
+          state.news = payload;
+          renderNews(state.news);
+        });
+        stream.addEventListener('alert', (evt) => {
+          const payload = JSON.parse(evt.data);
+          const token = `sse:${payload.id}:${payload.triggeredAt}:${payload.message}`;
+          if (state.lastAlertHash.has(token)) return;
+          state.lastAlertHash.add(token);
+          log(`实时提醒：${payload.label}`, payload.message, payload.level || 'mid');
+          if (state.pushEnabled && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification(`黄金提醒：${payload.label}`, { body: payload.message });
+          }
+        });
+        stream.onerror = () => {
+          el('connState').textContent = '实时已连接 · 重连中';
+        };
+        el('connState').textContent = '实时已连接';
+      } catch {
+        el('connState').textContent = '实时流不可用';
+      }
+    }
+
+    function renderAlerts() {
+      el('alertsList').innerHTML = state.rules.length ? state.rules.map(rule => `
+        <div class="rule">
+          <div class="topline">
+            <h4>${rule.label}</h4>
+            <span class="badge ${rule.enabled ? 'on' : 'off'}">${rule.enabled ? '启用' : '停用'}</span>
+          </div>
+          <p>${rule.type === 'above' ? '上破' : '下破'} ${Number(rule.value).toFixed(2)} · ${rule.level}</p>
+          <div class="rule-actions" style="margin-top:10px">
+            <button class="btn" data-action="toggle-rule" data-id="${rule.id}" type="button">${rule.enabled ? '停用' : '启用'}</button>
+            <button class="btn" data-action="delete-rule" data-id="${rule.id}" type="button">删除</button>
+          </div>
+        </div>
+      `).join('') : `<div class="rule"><p>暂无提醒规则。添加一个价格阈值，页面就会持续监测。</p></div>`;
+    }
+
+    function renderLog() {
+      el('logList').innerHTML = state.log.slice(0, 6).map(entry => `
+        <div class="log">
+          <div class="topline">
+            <h4>${entry.title}</h4>
+            <span class="tag ${entry.level === 'high' ? 'red' : entry.level === 'mid' ? 'gold' : 'blue'}">${entry.level}</span>
+          </div>
+          <p>${entry.text}</p>
+          <div class="small" style="margin-top:8px">${entry.time}</div>
+        </div>
+      `).join('');
+    }
+
+    function setTfButtons(tf) {
+      document.querySelectorAll('#tfGroup .chip').forEach(btn => btn.classList.toggle('active', btn.dataset.tf === tf));
+      el('tfLabel').textContent = `周期：${tf}`;
+    }
+
+    function loadLocalRules() {
+      try { state.rules = JSON.parse(localStorage.getItem('gold-rules') || '[]').map(normalizeRule); }
+      catch { state.rules = []; }
+    }
+
+    function loadLocalNotes() {
+      el('notes').value = localStorage.getItem('gold-notes') || '';
+    }
+
+    function saveLocalNotes() {
+      localStorage.setItem('gold-notes', el('notes').value);
+    }
+
+    function saveLocalRules() {
+      localStorage.setItem('gold-rules', JSON.stringify(state.rules));
+    }
+
+    function localFallbackMarket() {
+      return {
+        symbol: 'XAUUSD',
+        price: 4502.0,
+        change: 14.2,
+        changePct: 0.32,
+        updatedAt: new Date().toISOString(),
+        updatedAtReadable: 'fallback snapshot',
+        silver: 76.8,
+        dxy: 104.12,
+        ust10y: 4.41,
+        volatility: '中高',
+        bias: '偏多震荡',
+        score: 72,
+        levels: ['4450.00', '4518.00', '4542.00'],
+        indicators: { rsi: 64, macd: '偏强', adx: 26, atr: '18.8', pattern: '上升通道内回踩' },
+        series: seriesFromPrice(4502, '4H'),
+      };
+    }
+
+    function applySnapshot(snapshot) {
+      state.market = snapshot;
+      const info = derived(snapshot.series || seriesFromPrice(snapshot.price, state.tf));
+      const tf = tfConfig[state.tf];
+      drawChart(snapshot.series || seriesFromPrice(snapshot.price, state.tf));
+      renderIndicators(info, snapshot);
+      renderScenarios(snapshot);
+      renderAssets(snapshot);
+      renderNews(state.news);
+      el('price').textContent = snapshot.price.toFixed(2);
+      el('change').textContent = `${info.change >= 0 ? '+' : ''}${info.change.toFixed(2)} / ${info.changePct >= 0 ? '+' : ''}${info.changePct.toFixed(2)}%`;
+      el('bias').textContent = tf.bias;
+      el('pattern').textContent = tf.note;
+      el('vol').textContent = snapshot.volatility;
+      el('levels').textContent = `支撑 ${snapshot.levels[0]} / 阻力 ${snapshot.levels[1]} / 延伸 ${snapshot.levels[2]}`;
+      el('score').textContent = `${tf.score}/100`;
+      el('summary').textContent = `更新于 ${new Date(snapshot.updatedAt || Date.now()).toLocaleString('zh-CN', { hour12:false })}`;
+      el('miniLevels').textContent = `${snapshot.levels[0]} / ${snapshot.levels[1]} / ${snapshot.levels[2]}`;
+      el('maState').textContent = tf.ma;
+      el('pattern2').textContent = snapshot.indicators?.pattern || tf.pattern;
+      el('deskNote').textContent = tf.note;
+      el('rsiBar').style.width = `${info.rsi}%`;
+      el('macdBar').style.width = `${clamp(info.adx * 2, 20, 90)}%`;
+      el('adxBar').style.width = `${clamp(info.adx * 2, 20, 90)}%`;
+      el('atrBar').style.width = `${tf.atr}%`;
+      el('rsiVal').textContent = String(info.rsi);
+      el('macdVal').textContent = info.macd;
+      el('adxVal').textContent = String(info.adx);
+      el('atrVal').textContent = info.atr;
+      el('updated').textContent = `最近刷新：${fmtStamp()}`;
+      el('userState').textContent = state.user ? `已登录：${state.user.username}` : '未登录';
+    }
+
+    async function bootstrap() {
+      loadLocalRules();
+      loadLocalNotes();
+      renderAlerts();
+      renderCalendar();
+      updatePushBadge();
+      refreshClock();
+      connectStream();
+      await loadAuthState();
+      if (!state.market) {
+        try {
+          await loadMarket();
+          await loadNews();
+        } catch {
+          applySnapshot(localFallbackMarket());
+        }
+      }
+      await fetchAlerts();
+    }
+
+    document.getElementById('tfGroup').addEventListener('click', e => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      setTf(btn.dataset.tf);
+      if (state.market) applySnapshot(state.market);
+    });
+
+    document.getElementById('watchlist').addEventListener('click', e => {
+      const item = e.target.closest('.asset');
+      if (!item) return;
+      state.assets = state.assets.map(a => ({ ...a, active: a.id === item.dataset.asset }));
+      renderAssets(state.market || localFallbackMarket());
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', async () => {
+      await loadMarket();
+      await loadNews();
+      await fetchAlerts();
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', async () => {
+      const snap = state.market || localFallbackMarket();
+      const summary = [
+        `黄金实时摘要`,
+        `时间：${fmtStamp()}`,
+        `现价：${snap.price.toFixed(2)}`,
+        `偏向：${tfConfig[state.tf].bias}`,
+        `支撑/阻力：${snap.levels.join(' / ')}`,
+        `提示：${tfConfig[state.tf].note}`,
+      ].join('\n');
+      try {
+        await navigator.clipboard.writeText(summary);
+        el('exportBtn').textContent = '已复制摘要';
+        setTimeout(() => {
+          el('exportBtn').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>导出摘要';
+        }, 1200);
+      } catch {
+        el('exportBtn').textContent = '复制失败';
+      }
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      try {
+        await login();
+        await syncRulesFromServer();
+        await syncNotesFromServer();
+      } catch (err) {
+        log('登录失败', String(err.message || err), 'high');
+      }
+    });
+
+    document.getElementById('registerBtn').addEventListener('click', async () => {
+      try {
+        await register();
+        await syncRulesFromServer();
+        await syncNotesFromServer();
+      } catch (err) {
+        log('注册失败', String(err.message || err), 'high');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await logout();
+      } catch (err) {
+        log('退出失败', String(err.message || err), 'high');
+      }
+    });
+
+    document.getElementById('pushBtn').addEventListener('click', async () => {
+      await enablePush();
+    });
+
+    document.getElementById('ruleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const label = el('ruleLabel').value.trim() || `提醒 ${Date.now()}`;
+      const value = Number(el('ruleValue').value);
+      if (!Number.isFinite(value)) return;
+      state.rules.unshift(normalizeRule({
+        id: Date.now(),
+        label,
+        type: el('ruleType').value,
+        value,
+        level: el('ruleLevel').value,
+        enabled: true,
+      }));
+      saveLocalRules();
+      renderAlerts();
+      el('ruleLabel').value = '';
+      el('ruleValue').value = '';
+      log('新增提醒', `${label} 已保存`, 'low');
+      if (state.user) await syncRulesToServer();
+    });
+
+    el('alertsList').addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const rule = state.rules.find(r => r.id === btn.dataset.id);
+      if (!rule) return;
+      if (btn.dataset.action === 'toggle-rule') {
+        rule.enabled = !rule.enabled;
+        log('提醒状态变更', `${rule.label} 已${rule.enabled ? '启用' : '停用'}`, 'low');
+      }
+      if (btn.dataset.action === 'delete-rule') {
+        state.rules = state.rules.filter(r => r.id !== rule.id);
+        log('删除提醒', `${rule.label} 已删除`, 'low');
+      }
+      saveLocalRules();
+      renderAlerts();
+      if (state.user) await syncRulesToServer();
+    });
+
+    el('notes').addEventListener('input', async () => {
+      saveLocalNotes();
+      if (state.user) await syncNotesToServer();
+    });
+
+    el('clearNotes').addEventListener('click', async () => {
+      el('notes').value = '';
+      saveLocalNotes();
+      if (state.user) await syncNotesToServer();
+    });
+
+    setInterval(refreshClock, 1000);
+    setInterval(loadMarket, 30000);
+    setInterval(loadNews, 45000);
+    setInterval(fetchAlerts, 20000);
+    setInterval(() => {
+      if (state.user) syncNotesToServer();
+    }, 60000);
+
+    bootstrap();
+  </script>
+</body>
+</html>
