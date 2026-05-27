@@ -65,6 +65,7 @@ let previousMarket = null;
 let latestNews = fallbackNews;
 let newsRefreshedAt = 0;
 let marketRefreshInFlight = null;
+let marketRefreshedAt = 0;
 let dbReady = false;
 const clients = new Map();
 let clientSeq = 0;
@@ -442,7 +443,9 @@ function sanitizeMarket(snapshot) {
   };
 }
 
-async function refreshMarket() {
+async function refreshMarket(force = false) {
+  const cacheAge = Date.now() - marketRefreshedAt;
+  if (!force && latestMarket && cacheAge < 4500) return latestMarket;
   if (marketRefreshInFlight) return marketRefreshInFlight;
   marketRefreshInFlight = (async () => {
     let snapshot = fallbackMarket;
@@ -480,6 +483,7 @@ async function refreshMarket() {
       snapshot = latestMarket || fallbackMarket;
     }
     latestMarket = snapshot;
+    marketRefreshedAt = Date.now();
     if (previousMarket) dispatchRuleCrossings(previousMarket, latestMarket);
     broadcastToAll('market', sanitizeMarket(latestMarket));
     return latestMarket;
@@ -729,7 +733,7 @@ async function handleAlerts(req, res) {
   const user = await getCurrentUserAsync(req);
   const body = req.method === 'POST' ? await readJson(req) : {};
   const rules = normalizeRules(body.rules || (user ? await getRulesForUserDb(user.id) : []));
-  const snapshot = latestMarket || (await refreshMarket()) || fallbackMarket;
+  const snapshot = latestMarket || (await refreshMarket(false)) || fallbackMarket;
   const alerts = [];
   for (const rule of rules) {
     if (!rule.enabled) continue;
@@ -794,7 +798,8 @@ async function route(req, res) {
   }
 
   if (requestUrl.pathname === '/api/market') {
-    const snapshot = latestMarket || (await refreshMarket()) || fallbackMarket;
+    const force = requestUrl.searchParams.get('force') === '1';
+    const snapshot = force || !latestMarket ? await refreshMarket(force) : latestMarket;
     sendJson(res, 200, sanitizeMarket(snapshot));
     return;
   }
@@ -860,7 +865,7 @@ async function bootstrap() {
   await refreshNews(true);
   setInterval(() => {
     refreshMarket().catch(() => {});
-  }, 30000);
+  }, 5000);
   setInterval(() => {
     refreshNews(false).catch(() => {});
   }, 10 * 60 * 1000);

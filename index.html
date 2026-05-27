@@ -898,11 +898,11 @@
       updatePushBadge();
     }
 
-    async function loadMarket() {
+    async function loadMarket(force = false) {
       try {
-        const data = await api('/api/market');
+        const data = await api(`/api/market${force ? '?force=1' : ''}`);
         applySnapshot(data);
-        log('行情刷新', `已获取最新金价 ${data.price.toFixed(2)}，更新于 ${data.updatedAtReadable || data.updatedAt}`, 'low');
+        if (force) log('行情刷新', `已强制同步最新金价 ${data.price.toFixed(2)}，更新于 ${data.updatedAtReadable || data.updatedAt}`, 'low');
       } catch (err) {
         el('connState').textContent = '实时已连接 · 使用缓存';
         const snapshot = state.market || localFallbackMarket();
@@ -1190,7 +1190,8 @@
       el('macdVal').textContent = info.macd;
       el('adxVal').textContent = String(info.adx);
       el('atrVal').textContent = info.atr;
-      el('updated').textContent = `最近刷新：${fmtStamp()}`;
+      const delaySeconds = Math.max(0, Math.round((Date.now() - new Date(snapshot.updatedAt || Date.now()).getTime()) / 1000));
+      el('updated').textContent = `最近刷新：${fmtStamp()} · 延迟约 ${delaySeconds}s`;
       el('userState').textContent = state.user ? `已登录：${state.user.username}` : '未登录';
     }
 
@@ -1229,7 +1230,7 @@
     });
 
     document.getElementById('refreshBtn').addEventListener('click', async () => {
-      await loadMarket();
+      await loadMarket(true);
       await loadNews();
       await fetchAlerts();
     });
@@ -1341,7 +1342,7 @@
     });
 
     setInterval(refreshClock, 1000);
-    setInterval(loadMarket, 30000);
+    setInterval(() => loadMarket(false), 5000);
     setInterval(loadNews, 45000);
     setInterval(fetchAlerts, 20000);
     setInterval(() => {
